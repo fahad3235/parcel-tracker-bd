@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcel Tracker BD</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div>
+      <h1 id="h-title" data-i18n="appTitle">Parcel Tracker BD</h1>
+      <p class="subtitle" data-i18n="subtitle">Track all your courier parcels in one place, offline.</p>
+    </div>
+    <div class="top-actions">
+      <span class="asof"><span data-i18n="asof">As of</span> <strong id="asofVal"></strong></span>
+      <button id="langBtn" type="button" data-i18n="langBtn">Bangla</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs wrap" aria-label="Sections">
+  <button type="button" data-tab="dash" class="on" id="tabDash" data-i18n="tabDash">Dashboard</button>
+  <button type="button" data-tab="parcels" id="tabParcels" data-i18n="tabParcels">Parcels</button>
+  <button type="button" data-tab="data" id="tabData" data-i18n="tabData">Data</button>
+</nav>
+
+<main class="wrap">
+  <section id="view-dash" class="view on">
+    <div class="stats">
+      <div class="stat"><span class="k" data-i18n="totalParcels">Total parcels</span><span class="v" id="vTotal">-</span></div>
+      <div class="stat"><span class="k" data-i18n="inTransit">In transit</span><span class="v" id="vInTransit">-</span></div>
+      <div class="stat"><span class="k" data-i18n="delivered">Delivered</span><span class="v" id="vDelivered">-</span></div>
+      <div class="stat"><span class="k" data-i18n="codPending">COD pending</span><span class="v" id="vCodPending">-</span></div>
+      <div class="stat"><span class="k" data-i18n="codCollected">COD collected</span><span class="v" id="vCodCollected">-</span></div>
+      <div class="stat"><span class="k" data-i18n="overdue">Overdue</span><span class="v" id="vOverdue">-</span></div>
+    </div>
+    <h2 data-i18n="overdueListTitle">Overdue parcels</h2>
+    <ul id="overdueList" class="uplist"></ul>
+  </section>
+
+  <section id="view-parcels" class="view">
+    <form id="parcelForm" novalidate>
+      <h2 id="formTitle">Add parcel</h2>
+      <input type="hidden" id="f-id" value="">
+      <div id="formErrs" class="errbox" role="alert" style="display:none"></div>
+      <div id="formMsg" class="msg" style="display:none"></div>
+      <div class="grid">
+        <label><span data-i18n="trackingId">Tracking ID</span>
+          <input id="f-tracking" type="text" maxlength="60" autocomplete="off" placeholder="RX123456"></label>
+        <label><span data-i18n="courier">Courier</span>
+          <select id="f-courier">
+            <option value="Pathao Courier">Pathao Courier</option>
+            <option value="Steadfast">Steadfast</option>
+            <option value="RedX">RedX</option>
+            <option value="Paperfly">Paperfly</option>
+            <option value="Sundarban Courier">Sundarban Courier</option>
+            <option value="SA Paribahan">SA Paribahan</option>
+            <option value="eCourier">eCourier</option>
+            <option value="Other">Other</option>
+          </select></label>
+        <label><span data-i18n="sender">Sender / shop name</span>
+          <input id="f-sender" type="text" maxlength="100" autocomplete="off"></label>
+        <label><span data-i18n="item">Item description</span>
+          <input id="f-item" type="text" maxlength="200" autocomplete="off"></label>
+        <label><span data-i18n="cod">COD (BDT)</span>
+          <input id="f-cod" type="text" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+        <label><span data-i18n="expected">Expected delivery date</span>
+          <input id="f-expected" type="date"></label>
+      </div>
+      <label class="full"><span data-i18n="note">Note (optional)</span>
+        <textarea id="f-note" maxlength="500" rows="2"></textarea></label>
+      <div class="form-actions">
+        <button type="submit" id="btnSave" data-i18n="save">Save parcel</button>
+        <button type="button" id="btnCancelEdit" data-i18n="cancelEdit" style="display:none">Cancel edit</button>
+      </div>
+    </form>
+
+    <div class="filters">
+      <input id="qSearch" type="search" data-i18n-ph="search" placeholder="Search tracking / sender / item..." autocomplete="off">
+      <button type="button" id="btnClearSearch" data-i18n="clearSearch">Clear</button>
+      <select id="fCourierFilter" aria-label="Courier filter">
+        <option value="" data-i18n="allCouriers">All couriers</option>
+        <option value="Pathao Courier">Pathao Courier</option>
+        <option value="Steadfast">Steadfast</option>
+        <option value="RedX">RedX</option>
+        <option value="Paperfly">Paperfly</option>
+        <option value="Sundarban Courier">Sundarban Courier</option>
+        <option value="SA Paribahan">SA Paribahan</option>
+        <option value="eCourier">eCourier</option>
+        <option value="Other">Other</option>
+      </select>
+      <label class="sort-label"><span data-i18n="sortBy">Sort</span>
+        <select id="fSort">
+          <option value="newest" data-i18n="sortNewest">Newest first</option>
+          <option value="oldest" data-i18n="sortOldest">Oldest first</option>
+          <option value="expected" data-i18n="sortExpected">Expected date</option>
+          <option value="cod" data-i18n="sortCod">COD (high first)</option>
+        </select></label>
+    </div>
+    <div id="statusChips" class="chips" role="group" aria-label="Status filter"></div>
+    <div id="parcelList" class="plist"></div>
+    <div id="detailPanel" class="detail"></div>
+  </section>
+
+  <section id="view-data" class="view">
+    <h2 data-i18n="exportJson">Export JSON</h2>
+    <p class="muted" data-i18n="exportHint">Exported JSON appears below. Copy it somewhere safe.</p>
+    <div class="form-actions">
+      <button type="button" id="btnExport" data-i18n="exportJson">Export JSON</button>
+    </div>
+    <textarea id="exportOut" rows="6" readonly placeholder="Exported JSON appears here..."></textarea>
+
+    <h2 data-i18n="importJson">Import JSON</h2>
+    <textarea id="importText" rows="6" data-i18n-ph="importPlaceholder" placeholder="Paste exported JSON here..."></textarea>
+    <div class="form-actions">
+      <button type="button" id="btnImport" data-i18n="importBtn">Import</button>
+    </div>
+
+    <h2 data-i18n="eraseTitle">Erase all data</h2>
+    <p class="muted" data-i18n="eraseHint">Type DELETE to enable erase.</p>
+    <div class="erase-row">
+      <input id="eraseInput" type="text" autocomplete="off" placeholder="DELETE">
+      <button type="button" id="btnErase" data-i18n="eraseBtn" disabled>Erase all data</button>
+    </div>
+    <div id="dataMsg" class="msg" style="display:none"></div>
+  </section>
+
+  <footer>
+    <p data-i18n="disclaimer">Personal offline tracker. Not connected to any courier live tracking system. Verify status on the courier own site.</p>
+  </footer>
+</main>
+
+<script src="js/logic.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
